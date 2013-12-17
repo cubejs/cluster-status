@@ -7,10 +7,12 @@ This is a helpful piece evolved from the current cluster2, which is to allow app
 It allows each worker to register its own state, master would automatically aggregate all states from active workers.
 It works nicely with our monitor capability (via debug middleware)
 
+Notice, the status module works in a single process runtime too based on its event driven implementation.
+
 * **`register`**
 
 ```javascript
-require('cluster2/status')
+require('cluster-status')
   .register('status-name',
     function(){
       return 'view';//view function
@@ -23,19 +25,19 @@ require('cluster2/status')
 * **`statuses`**
 
 ```javascript
-require('cluster2/status')
+require('cluster-status')
   .statuses(); //return names of registered statuses
 ```
 
 * **`getStatus`**
 
 ```javascript
-require('cluster2/status')
+require('cluster-status')
   .getStatus('status-name')
   .then(function(status){
     //got status
-  })
-  .otherwise(function(error){
+  },
+  function(error){
     //err
   });
 ```
@@ -43,13 +45,13 @@ require('cluster2/status')
 * **`setStatus`**
 
 ```javascript
-require('cluster2/status')
+require('cluster-status')
   .setStatus('status-name',
     'value')
   .then(function(set){
     //set or not
-  })
-  .otherwise(function(error){
+  },
+  function(error){
     //err
   });
 ```
