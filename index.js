@@ -24,6 +24,7 @@ var emitter = require('cluster-emitter'),
         return process.getLogger(__filename);
 	};
 
+//there must not be more than one status module in a process runtime, otherwise the status registered could be missing
 module.exports = process.clusterStatus = process.clusterStatus || (function(emitter){
 
 	var registry = {}; //map of registered status names to status entities 
