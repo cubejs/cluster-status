@@ -21,6 +21,7 @@
     "url": "https://github.com/cubejs/cluster-status/issues"
   },
   "dependencies": {
+    "cluster-emitter": "git://github.com/cubejs/cluster-emitter",
     "underscore": "~1.5.2",
     "when": "~2.7.0"
   },
