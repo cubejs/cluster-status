@@ -32,39 +32,42 @@ describe('cluster-status', function(){
 
 				status.register(name, function(){
 					return view;
-				});
+				})
+				.then(function(registered){
 
-				status.getStatus(name).then(function(result){
+					name.should.equal(registered);
+					status.getStatus(name).then(function(result){
 
-					result.should.be.ok;
-					result.length.should.equal(1);
+						result.should.be.ok;
+						result.length.should.equal(1);
 
-					var stat = result.shift();
-					stat.should.be.ok;
-					stat.pid.should.equal(process.pid);
-					stat.name.should.equal(name);
-					stat.status.should.equal(view);
+						var stat = result.shift();
+						stat.should.be.ok;
+						stat.pid.should.equal(process.pid);
+						stat.name.should.equal(name);
+						stat.status.should.equal(view);
 
-					status.setStatus(name, 'noop').then(function(){ //as we didn't register update, setStatus should have no effect at all.
+						status.setStatus(name, 'noop').then(function(){ //as we didn't register update, setStatus should have no effect at all.
 
-						status.getStatus(name).then(function(result){
+							status.getStatus(name).then(function(result){
 
-							result.should.be.ok;
-							result.length.should.equal(1);
+								result.should.be.ok;
+								result.length.should.equal(1);
 
-							var stat = result.shift();
-							stat.should.be.ok;
-							stat.pid.should.equal(process.pid);
-							stat.name.should.equal(name);
-							stat.status.should.equal(view);
+								var stat = result.shift();
+								stat.should.be.ok;
+								stat.pid.should.equal(process.pid);
+								stat.name.should.equal(name);
+								stat.status.should.equal(view);
 
-							done();
+								done();
 
-						});
+							});
+
+						}, done);
 
 					}, done);
-
-				}, done);
+				});
 			});
 		});
 
