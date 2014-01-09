@@ -50,6 +50,8 @@ module.exports = process.clusterStatus = process.clusterStatus || (function(emit
 
 			logger().info('[status] register status: %s from %d, in process: %d', name, pid, process.pid);
 		}
+
+		emitter.to([pid]).emit('status-registered', name);
 	});
 
 	emitter.on('del-status', function(name, pid){
@@ -63,6 +65,8 @@ module.exports = process.clusterStatus = process.clusterStatus || (function(emit
         }
 
 		logger().info('[status] unregister status: %s in process: %d', name, pid);
+
+		emitter.to([pid]).emit('status-unregistered', name);
 	});
 
 	cluster.on('disconnect', function(worker){
@@ -87,6 +91,16 @@ module.exports = process.clusterStatus = process.clusterStatus || (function(emit
 
 		'register': function register(name, view, update){
 
+			var tillRegistered = when.defer();
+
+			emitter.on('status-registered', function onRegistered(registered){
+				if(name === registered){
+					
+					tillRegistered.resolve(registered);
+					emitter.removeListener('status-registered', onRegistered);
+				}
+			});
+
 			emitter.to(['master', 'self']).emit('new-status', name, process.pid, view, update);
 
 			emitter.on(util.format('get-status-%s', name), function(echo){
@@ -100,15 +114,30 @@ module.exports = process.clusterStatus = process.clusterStatus || (function(emit
 
 				emitter.to(['master', 'self']).emit(echo, update(value));
 			});
+
+			return tillRegistered.promise;
 		},
 
 		'unregister': function unregister(name){
+
+			var tillUnregistered = when.defer();
+
+			emitter.on('status-unregistered', function onUnregistered(unregistered){
+
+				if(name === unregistered){
+
+					tillUnregistered.resolve(unregistered);
+					emitter.removeListener('status-unregistered', onUnregistered);
+				}
+			});
 
 			emitter.to(['master', 'self']).emit('del-status', name, process.pid);
 
 			emitter.removeAllListeners(util.format('get-status-%s', name));
 
 			emitter.removeAllListeners(util.format('set-status-%s', name));
+
+			return tillUnregistered.promise;
 		},
 
 		'statuses': function(){
